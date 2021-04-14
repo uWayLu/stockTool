@@ -15,13 +15,25 @@
             aria-describedby="keywordsTip"
             autocomplete="off"
             v-model="keyword"
+            list="keywordOptions"
           />
           <button type="button" class="btn btn-primary">
             <i class="bi-search"></i>
           </button>
+          <datalist id="keywordOptions">
+            <option
+              v-for="stock in stockList"
+              :key="stock.codename"
+              :value="stock.codename"
+              :text="stock.name"
+            ></option>
+          </datalist>
         </div>
         <div id="keywordsTip" class="form-text text-light">
-          範例: <span class="text-warning">2330, </span><span class="text-warning text-decoration-line-through">台積電, 台GG, TSMC</span>
+          範例: <span class="text-warning">2330, 台積電, </span
+          ><span class="text-muted text-decoration-line-through"
+            >台GG, TSMC</span
+          >
         </div>
         <!-- datalists -->
       </div>
@@ -32,7 +44,7 @@
     <div class="row gy-4">
       <div
         class="card-group col-4 g-4"
-        v-for="site in sitelist"
+        v-for="site in siteList"
         :key="site.name"
       >
         <div class="card">
@@ -48,7 +60,7 @@
                 :href="site.url.replace(/%s/, keyword)"
                 class="btn btn-primary"
                 target="_blank"
-                >前往{{ keyword }}</a
+                >前往{{ selectedStock.name }}</a
               >
             </div>
           </div>
@@ -56,7 +68,11 @@
       </div>
       <hr class="mt-4" />
       <div class="fw-bold fs-6 mt-2 mb-1">PTT企業綽號列表</div>
-      <iframe class="mt-0" src="https://pttpedia.fandom.com/zh/wiki/PTT%E4%BC%81%E6%A5%AD%E7%B6%BD%E8%99%9F%E5%88%97%E8%A1%A8" height="1000"></iframe>
+      <iframe
+        class="mt-0"
+        src="https://pttpedia.fandom.com/zh/wiki/PTT%E4%BC%81%E6%A5%AD%E7%B6%BD%E8%99%9F%E5%88%97%E8%A1%A8"
+        height="800"
+      ></iframe>
     </div>
   </div>
 </template>
@@ -67,7 +83,10 @@ export default {
   data() {
     return {
       keyword: "",
-      sitelist: [
+      gsheetUrl:
+        "https://spreadsheets.google.com/feeds/list/1wPHXu5MnGsFaOrwCn6QDmPQLjIMlphShMIOO2E2xCIM/5/public/values?alt=json",
+      stockList: [{ codename: "", name: "" }],
+      siteList: [
         {
           name: "HiStock嗨投資",
           url: "https://histock.tw/stock/%s",
@@ -92,6 +111,34 @@ export default {
         { name: "Google", url: "https://www.google.com/search?q=%s", tags: [] },
       ],
     };
+  },
+  methods: {
+    async fetchStockList() {
+      try {
+        const gsheet = await fetch(this.gsheetUrl);
+        if (gsheet.ok) {
+          const data = JSON.parse(await gsheet.text());
+          this.parseGsheetData(data.feed.entry);
+        }
+      } catch (e) {}
+    },
+    parseGsheetData(entries) {
+      entries.forEach((value) => {
+        var entry = {
+          codename: value.gsx$代號.$t,
+          name: value.gsx$名稱.$t,
+        };
+        this.stockList.push(entry);
+      });
+    },
+  },
+  computed: {
+    selectedStock() {
+      return this.stockList.find(stock => this.keyword == stock.codename) ?? {}
+    }
+  },
+  mounted() {
+    this.fetchStockList();
   },
 };
 </script>
