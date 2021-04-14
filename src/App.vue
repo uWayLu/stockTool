@@ -1,17 +1,20 @@
 <template>
   <Portal />
+  <Footer />
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
 import HelloWorld from './components/HelloWorld.vue'
 import Portal from './components/Portal.vue'
+import Footer from './components/Footer.vue'
 
 export default defineComponent({
   name: 'App',
   components: {
     HelloWorld,
-    Portal
+    Portal,
+    Footer
   }
 })
 </script>

@@ -48,7 +48,7 @@
                 :href="site.url.replace(/%s/, keyword)"
                 class="btn btn-primary"
                 target="_blank"
-                >門{{ keyword }}</a
+                >前往{{ keyword }}</a
               >
             </div>
           </div>
